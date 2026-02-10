@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaLandAI - Land Risk Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 30px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active .dot {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        .step-dot.completed .dot {
+            background: #22863a;
+            color: white;
+            border-color: #22863a;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .step-dot.active .step-label {
+            color: #0066cc;
+        }
+
+        .step-dot.completed .step-label {
+            color: #22863a;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-container h2 {
+            font-size: 24px;
+            color: #1a365d;
+            margin-bottom: 10px;
+        }
+
+        .form-container p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a365d;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select, .dropdown-search {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-group input:focus, .form-group select:focus, .dropdown-search:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: #dc3545;
+        }
+
+        .dropdown-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropdown-search {
+            cursor: pointer;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 8px;
+        }
+
+        .dropdown-search::after {
+            content: "▼";
+            font-size: 12px;
+            color: #666;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options.open {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-option:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown-option.selected {
+            background: #e6f0ff;
+            color: #0066cc;
+            font-weight: 600;
+        }
+
+        .dropdown-option.disabled {
+            color: #999;
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+
+        .dropdown-search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .dropdown-search-input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .no-options {
+            padding: 10px 12px;
+            color: #999;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .error-text {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .price-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .price-total {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #0066cc;
+        }
+
+        .discount-badge {
+            display: inline-block;
+            background: #22863a;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method-label {
+            flex: 1;
+            position: relative;
+        }
+
+        .payment-method-label input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .payment-method-label .method-name {
+            display: block;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .payment-method-label input[type="radio"]:checked + .method-name {
+            border-color: #0066cc;
+            background: #e6f0ff;
+            font-weight: 600;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            margin-top: 3px;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0052a3;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #efefef;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .processing {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #0052a3);
+            width: 0%;
+            animation: progress 3s ease-in-out forwards;
+        }
+
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-box {
+            background: #e6f7ed;
+            border: 2px solid #22863a;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .success-box h3 {
+            color: #1a365d;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .success-box p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .report-details {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row .label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cache-info {
+            background: #e6f7ed;
+            border-left: 4px solid #22863a;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #22863a;
+            font-size: 13px;
+        }
+
+        .footer {
+            background: #1a365d;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 13px;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column-reverse;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>🌾 AquaLandAI</h1>
+        <p>Land Risk Assessment & Caching System</p>
+    </header>
+
+    <!-- Introduction Section -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center;">
+        <div class="container" style="max-width: 900px;">
+            <h2 style="margin: 0 0 20px 0; font-size: 28px;">Welcome to AquaLandAI</h2>
+            <p style="font-size: 16px; margin: 0 0 30px 0; line-height: 1.6; opacity: 0.95;">
+                Assess agricultural land risk in Bihar with AI-powered analysis. Know the water availability, soil health, flood risk, and other critical factors before investing.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin-top: 0; font-size: 18px;">🔍 Smart Analysis</h3>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">Get detailed risk assessment including water levels, soil quality, and environmental factors</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin-top: 0; font-size: 18px;">⚡ Fast Results</h3>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">Get instant results or use cached analysis if the land was recently evaluated</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <h3 style="margin-top: 0; font-size: 18px;">💰 Affordable Pricing</h3>
+                    <p style="margin: 10px 0 0 0; font-size: 14px;">Pay ₹25 for new analysis. Returning customers get 80% discount on repeat searches</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.15); padding: 20px; border-radius: 8px; border-left: 4px solid white; text-align: left; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">How It Works:</h4>
+                <ol style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
+                    <li><strong>Step 1:</strong> Enter your land details (District, Circle/Block, Village, and Khata/Khesra numbers)</li>
+                    <li><strong>Step 2:</strong> Provide your contact details and payment method</li>
+                    <li><strong>Step 3:</strong> Get instant AI-powered risk analysis with detailed findings and downloadable PDF report</li>
+                </ol>
+            </div>
+
+            <p style="font-size: 13px; margin: 0; opacity: 0.8;">
+                ✓ All data is securely processed and cached for 7 days for quick access
+            </p>
+        </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step-dot active" data-step="0">
+            <div class="dot">1</div>
+            <div class="step-label">Land Details</div>
+        </div>
+        <div class="step-dot" data-step="1">
+            <div class="dot">2</div>
+            <div class="step-label">Payment</div>
+        </div>
+        <div class="step-dot" data-step="2">
+            <div class="dot">3</div>
+            <div class="step-label">Results</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Step 1: Land Details -->
+        <div class="form-container active" id="step-0">
+            <h2>Land Details</h2>
+            <p>Enter the details of the land parcel you want to assess</p>
+            <div id="cache-info"></div>
+
+            <form id="landForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="district">District *</label>
+                        <div class="dropdown-container" id="district-dropdown">
+                            <input type="text" class="dropdown-search-input" id="district-search" placeholder="Search district..." readonly>
+                            <div class="dropdown-options" id="district-options"></div>
+                        </div>
+                        <input type="hidden" id="district" name="district" required>
+                        <span class="error-text" id="error-district"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="circle">Circle/Block *</label>
+                        <div class="dropdown-container" id="circle-dropdown">
+                            <input type="text" class="dropdown-search-input" id="circle-search" placeholder="Select district first..." readonly disabled>
+                            <div class="dropdown-options" id="circle-options"></div>
+                        </div>
+                        <input type="hidden" id="circle" name="circle" required>
+                        <span class="error-text" id="error-circle"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="village">Village/Mauza *</label>
+                        <div class="dropdown-container" id="village-dropdown">
+                            <input type="text" class="dropdown-search-input" id="village-search" placeholder="Select circle first..." readonly disabled>
+                            <div class="dropdown-options" id="village-options"></div>
+                        </div>
+                        <input type="hidden" id="village" name="village" required>
+                        <span class="error-text" id="error-village"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerName">Owner Name (Optional)</label>
+                        <input type="text" id="ownerName" name="ownerName" placeholder="e.g., John Doe">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="khata">Khata Number *</label>
+                        <input type="text" id="khata" name="khata" placeholder="e.g., KH-12345" required>
+                        <span class="error-text" id="error-khata"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="khesra">Khesra Number *</label>
+                        <input type="text" id="khesra" name="khesra" placeholder="e.g., KH-SEC-001" required>
+                        <span class="error-text" id="error-khesra"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="plotArea">Plot Area (Optional)</label>
+                        <input type="text" id="plotArea" name="plotArea" placeholder="e.g., 2500 sq ft">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" onclick="goToStep(1)">
+                        Next: Payment →
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Payment -->
+        <div class="form-container" id="step-1">
+            <h2>Payment & Delivery</h2>
+            <p>Complete your payment and provide contact details</p>
+
+            <div class="price-section">
+                <h3 style="margin-bottom: 15px; color: #1a365d;">Order Summary</h3>
+                <div id="discount-info"></div>
+                <div class="price-row">
+                    <span>Land Assessment</span>
+                    <span id="price-display">₹25.00</span>
+                </div>
+                <div class="price-row price-total">
+                    <span>Total Amount</span>
+                    <span id="total-display">₹25.00</span>
+                </div>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="whatsapp">WhatsApp Number *</label>
+                    <div style="display: flex;">
+                        <span style="background: #f5f5f5; border: 1px solid #ddd; border-right: none; padding: 10px 10px; border-radius: 4px 0 0 4px; color: #666; font-size: 13px; font-weight: 600;">+91</span>
+                        <input type="tel" id="whatsapp" name="whatsapp" placeholder="9876543210" maxlength="13" required style="border: 1px solid #ddd; border-left: none; border-radius: 0 4px 4px 0; flex: 1;">
+                    </div>
+                    <span class="error-text" id="error-whatsapp"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                    <span class="error-text" id="error-email"></span>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="margin-bottom: 10px; display: block; font-weight: 600; color: #1a365d; font-size: 14px;">Payment Method *</label>
+                    <div class="payment-methods">
+                        <label class="payment-method-label">
+                            <input type="radio" name="paymentMethod" value="razorpay" checked>
+                            <span class="method-name">💳 Razorpay</span>
+                        </label>
+                        <label class="payment-method-label">
+                            <input type="radio" name="paymentMethod" value="paytm">
+                            <span class="method-name">📱 Paytm</span>
+                        </label>
+                        <label class="payment-method-label">
+                            <input type="radio" name="paymentMethod" value="cashfree">
+                            <span class="method-name">🏦 Cashfree</span>
+                        </label>
+                    </div>
+                </div>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="agree" required>
+                    <span>I agree to the Terms of Service and Privacy Policy</span>
+                </label>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(0)">
+                        ← Back
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="goToStep(2)">
+                        Proceed to Pay →
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 3: Processing/Results -->
+        <div class="form-container" id="step-2">
+            <div class="processing">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <p style="color: #666; margin-bottom: 20px;">Processing your land assessment...</p>
+            </div>
+
+            <div class="success-box" id="successBox" style="display: none;">
+                <div class="success-icon">✅</div>
+                <h3>Report Generated Successfully!</h3>
+                <p>Your land assessment report has been generated and will be sent to your WhatsApp and Email.</p>
+
+                <div class="report-details">
+                    <div class="detail-row">
+                        <span class="label">Land Location:</span>
+                        <span id="result-location"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Khata/Khesra:</span>
+                        <span id="result-khata"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Report Validity:</span>
+                        <span>7 Days</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Report Type:</span>
+                        <span id="result-type"></span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="resetForm()" style="margin-top: 20px;">
+                    Start New Search
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 AquaLandAI. All rights reserved. | Smart Land Risk Assessment System with Caching</p>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:8081/api';
+        let currentData = {};
+        let isoCached = false;
+
+        // Bihar administrative data structure
+        const biharData = {
+            "Patna": {
+                "Patna City": ["Ram Nagar", "Ashok Raj Path", "Agamkuan", "Kalika"],
+                "Gaya Road": ["Karam Pura", "Rajendra Nagar", "Parbatti Pur"],
+                "Khushrupur": ["Patna Pur", "Phulwari", "Dhanarua"]
+            },
+            "Gaya": {
+                "Gaya": ["Hazratganj", "Ashok Chowk", "Ramna", "Badagaon"],
+                "Wazirganj": ["Bihpur", "Dhanarua", "Jahera"],
+                "Tikari": ["Belganj", "Imamganj", "Karanpur"]
+            },
+            "Nalanda": {
+                "Nalanda": ["Silao", "Hilsa", "Biharsharif"],
+                "Biharsharif": ["Tanti Bazaar", "Govindpur", "Jahangir Pur"],
+                "Islampur": ["Jamui", "Katnai", "Chandi"]
+            },
+            "East Champaran": {
+                "Motihari": ["Valmiki Nagar", "Motijheel", "Rampur Bigaha"],
+                "Raxaul": ["Raxaul Bazar", "Madhubani", "Sakri"],
+                "Chanpatia": ["Dhaka", "Rampurwa", "Bauddha"]
+            },
+            "West Champaran": {
+                "Bettiah": ["Bettiah City", "Imli Bazaar", "Laukaha"],
+                "Motihari": ["Bagha", "Dholi", "Tetulia"],
+                "Sikta": ["Barbigha", "Narkatiaganj", "Saripur"]
+            },
+            "Muzaffarpur": {
+                "Muzaffarpur": ["Ram Patti", "Kali Mandir", "Mustari Ganj"],
+                "Kanti": ["Malsi", "Sakra", "Mohan"],
+                "Sakra": ["Barhiya", "Bhasaut", "Kaniara"]
+            },
+            "Vaishali": {
+                "Vaishali": ["Hajipur", "Madhubani", "Aniruddha Pur"],
+                "Hajipur": ["Vaishali Nagar", "Rani Nagar", "Pathardih"],
+                "Mahua": ["Desari", "Baniyapur", "Jandaha"]
+            },
+            "Begusarai": {
+                "Begusarai": ["Bachhwara", "Matihani", "Chhotipur"],
+                "Baisi": ["Rajauli", "Khagaria", "Sandi"],
+                "Teghra": ["Beldaur", "Sampa", "Pharkia"]
+            },
+            "Khagaria": {
+                "Khagaria": ["Parbatta", "Araria", "Khagaria Sadar"],
+                "Araria": ["Araria City", "Forbesganj", "Ramnagar"],
+                "Mansi": ["Mansi City", "Gogri", "Andhua"]
+            },
+            "Madhubani": {
+                "Madhubani": ["Ramgopal Pur", "Gajharia", "Jhanjarpur"],
+                "Lalpur": ["Lalpur City", "Benipatti", "Dhamdaha"],
+                "Phulpur": ["Jitpur", "Khajaraha", "Porahat"]
+            },
+            "Darbhanga": {
+                "Darbhanga": ["Choti Adda", "Darbhanga City", "Laheri Pur"],
+                "Alinagar": ["Alinagar City", "Bahera", "Kusheshwar"],
+                "Singhwara": ["Benipur", "Kishanpur", "Sohansarai"]
+            },
+            "Supaul": {
+                "Supaul": ["Supaul City", "Amar Pur", "Basopatti"],
+                "Chhatapur": ["Chhatapur City", "Banmankhi", "Bihariganj"],
+                "Nirmali": ["Nirmali City", "Tirhut", "Forbesganj"]
+            },
+            "Araria": {
+                "Araria": ["Araria City", "Forbesganj", "Ramnagar"],
+                "Forbesganj": ["Forbesganj City", "Raniganj", "Sikti"],
+                "Bhargama": ["Bhargama City", "Kasba", "Raniganj"]
+            },
+            "Madhepura": {
+                "Madhepura": ["Madhepura City", "Kumarkund", "Alamnagar"],
+                "Alamnagar": ["Alamnagar City", "Sinha Pur", "Udhnagar"],
+                "Singheshwar": ["Singheshwar City", "Parbanna", "Dhamdaha"]
+            },
+            "Sahsa": {
+                "Sahsa": ["Sahsa City", "Barahat", "Saharsa"],
+                "Barahat": ["Barahat City", "Chakbandi", "Karanpur"],
+                "Asarganj": ["Asarganj City", "Sher Pur", "Bhavani"]
+            },
+            "Purnea": {
+                "Purnea": ["Purnea City", "Rupauli", "Kasba"],
+                "Kasba": ["Kasba City", "Baisi", "Dhamtari"],
+                "Rupauli": ["Rupauli City", "Kanchanpur", "Bisfi"]
+            },
+            "Katihar": {
+                "Katihar": ["Katihar City", "Radhanipur", "Dhamdaha"],
+                "Manihari": ["Manihari City", "Kursela", "Korha"],
+                "Jamuia": ["Jamuia City", "Renusagar", "Balua"]
+            },
+            "Bhagalpur": {
+                "Bhagalpur": ["Bhagalpur City", "Nathpur", "Rampur"],
+                "Nathnagar": ["Nathnagar City", "Tilka", "Manpur"],
+                "Kahalgaon": ["Kahalgaon City", "Sultanpur", "Dhanbigha"]
+            },
+            "Banka": {
+                "Banka": ["Banka City", "Amarpur", "Porahat"],
+                "Amarpur": ["Amarpur City", "Indrapuri", "Jarmundi"],
+                "Katoria": ["Katoria City", "Bankapur", "Lakhanpur"]
+            },
+            "Munger": {
+                "Munger": ["Munger City", "Jamalpur", "Manpur"],
+                "Jamalpur": ["Jamalpur City", "Ghosi", "Rajpur"],
+                "Sheikhpura": ["Sheikhpura City", "Akhri", "Gaya"]
+            },
+            "Lakhisarai": {
+                "Lakhisarai": ["Lakhisarai City", "Bahadurganj", "Rajauli"],
+                "Bahadurganj": ["Bahadurganj City", "Bantarpur", "Mahua"],
+                "Rajauli": ["Rajauli City", "Dharuan", "Rajganj"]
+            },
+            "Sheikhpura": {
+                "Sheikhpura": ["Sheikhpura City", "Akhri", "Barbigha"],
+                "Barbigha": ["Barbigha City", "Sohsrai", "Tikari"],
+                "Akhri": ["Akhri City", "Ghat", "Lakshmanganj"]
+            },
+            "Aurangabad": {
+                "Aurangabad": ["Aurangabad City", "Daudnagar", "Obra"],
+                "Daudnagar": ["Daudnagar City", "Agiaon", "Sherpur"],
+                "Obra": ["Obra City", "Karpi", "Jamui"]
+            },
+            "Rohtas": {
+                "Rohtas": ["Rohtas City", "Kaimur", "Ramgarh"],
+                "Kaimur": ["Kaimur City", "Rehra", "Govindpur"],
+                "Ramgarh": ["Ramgarh City", "Roh", "Bihpur"]
+            },
+            "Siwan": {
+                "Siwan": ["Siwan City", "Ramanagar", "Warisnagar"],
+                "Ramanagar": ["Ramanagar City", "Bishunpur", "Gaighat"],
+                "Mariahu": ["Mariahu City", "Ponto", "Gyan Vihar"]
+            },
+            "Saran": {
+                "Saran": ["Chapra", "Marhaura", "Amnour"],
+                "Chapra": ["Chapra City", "Sarai", "Mansarchand"],
+                "Marhaura": ["Marhaura City", "Parsa", "Bansdih"]
+            },
+            "Gopalganj": {
+                "Gopalganj": ["Gopalganj City", "Barauli", "Kataiya"],
+                "Barauli": ["Barauli City", "Alauli", "Hathua"],
+                "Kataiya": ["Kataiya City", "Rampurwa", "Dhaka"]
+            },
+            "Jehanabad": {
+                "Jehanabad": ["Jehanabad City", "Arwal", "Makhduma"],
+                "Arwal": ["Arwal City", "Karpi", "Udwant Nagar"],
+                "Makhduma": ["Makhduma City", "Warisliganj", "Amnour"]
+            },
+            "Nawada": {
+                "Nawada": ["Nawada City", "Rajauli", "Warisliganj"],
+                "Rajauli": ["Rajauli City", "Dharuan", "Kawakol"],
+                "Warisliganj": ["Warisliganj City", "Dhanbigha", "Rajauli"]
+            }
+        };
+
+        // Initialize dropdowns on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDropdowns();
+            initializePaymentValidation();
+        });
+
+        function initializePaymentValidation() {
+            // Re-check cache when email or whatsapp is entered
+            const emailField = document.getElementById('email');
+            const whatsappField = document.getElementById('whatsapp');
+
+            if (emailField) {
+                emailField.addEventListener('change', function() {
+                    checkCache();
+                });
+            }
+
+            if (whatsappField) {
+                whatsappField.addEventListener('change', function() {
+                    checkCache();
+                });
+            }
+        }
+
+        function initializeDropdowns() {
+            // District dropdown
+            const districtSearch = document.getElementById('district-search');
+            const districtOptions = document.getElementById('district-options');
+            
+            // Populate districts
+            const districts = Object.keys(biharData).sort();
+            renderOptions(districtOptions, districts, null);
+            
+            // District search and select
+            districtSearch.addEventListener('click', function() {
+                districtOptions.classList.toggle('open');
+            });
+
+            districtOptions.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-option')) {
+                    const district = e.target.textContent;
+                    document.getElementById('district').value = district;
+                    districtSearch.value = district;
+                    districtOptions.classList.remove('open');
+                    
+                    // Update circles
+                    const circles = Object.keys(biharData[district]).sort();
+                    const circleOptions = document.getElementById('circle-options');
+                    renderOptions(circleOptions, circles, null);
+                    
+                    // Enable circle dropdown
+                    document.getElementById('circle-search').disabled = false;
+                    document.getElementById('circle-search').placeholder = 'Search circle...';
+                    
+                    // Clear village
+                    document.getElementById('village').value = '';
+                    document.getElementById('village-search').value = '';
+                    document.getElementById('village-search').disabled = true;
+                    document.getElementById('village-search').placeholder = 'Select circle first...';
+                    document.getElementById('village-options').innerHTML = '';
+                    
+                    checkCache();
+                }
+            });
+
+            // Circle dropdown
+            const circleSearch = document.getElementById('circle-search');
+            const circleOptions = document.getElementById('circle-options');
+            
+            circleSearch.addEventListener('click', function() {
+                if (!this.disabled) {
+                    circleOptions.classList.toggle('open');
+                }
+            });
+
+            circleOptions.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-option')) {
+                    const circle = e.target.textContent;
+                    const district = document.getElementById('district').value;
+                    document.getElementById('circle').value = circle;
+                    circleSearch.value = circle;
+                    circleOptions.classList.remove('open');
+                    
+                    // Update villages
+                    const villages = biharData[district][circle].sort();
+                    const villageOptions = document.getElementById('village-options');
+                    renderOptions(villageOptions, villages, null);
+                    
+                    // Enable village dropdown
+                    document.getElementById('village-search').disabled = false;
+                    document.getElementById('village-search').placeholder = 'Search village...';
+                    
+                    // Clear village selection
+                    document.getElementById('village').value = '';
+                    document.getElementById('village-search').value = '';
+                    
+                    checkCache();
+                }
+            });
+
+            // Village dropdown
+            const villageSearch = document.getElementById('village-search');
+            const villageOptions = document.getElementById('village-options');
+            
+            villageSearch.addEventListener('click', function() {
+                if (!this.disabled) {
+                    villageOptions.classList.toggle('open');
+                }
+            });
+
+            villageOptions.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-option')) {
+                    const village = e.target.textContent;
+                    document.getElementById('village').value = village;
+                    villageSearch.value = village;
+                    villageOptions.classList.remove('open');
+                    
+                    checkCache();
+                }
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown-container')) {
+                    document.querySelectorAll('.dropdown-options.open').forEach(el => {
+                        el.classList.remove('open');
+                    });
+                }
+            });
+        }
+
+        function renderOptions(container, options, selected) {
+            container.innerHTML = '';
+            if (options.length === 0) {
+                container.innerHTML = '<div class="no-options">No options available</div>';
+                return;
+            }
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'dropdown-option';
+                if (selected === option) {
+                    div.classList.add('selected');
+                }
+                div.textContent = option;
+                container.appendChild(div);
+            });
+        }
+
+        async function checkCache() {
+            const khata = document.getElementById('khata').value;
+            const khesra = document.getElementById('khesra').value;
+            const district = document.getElementById('district').value;
+            const email = document.getElementById('email')?.value || '';
+            const whatsapp = document.getElementById('whatsapp')?.value || '';
+
+            if (!khata || !khesra || !district) return;
+
+            try {
+                // Include email and whatsapp in cache check for user-based discount eligibility
+                // Discount (₹5) ONLY for same user (email + whatsapp match)
+                // Different users get full price (₹25) but may reuse cached PDF
+                let url = `${API_URL}/cache/check?khata=${encodeURIComponent(khata)}&khesra=${encodeURIComponent(khesra)}&district=${encodeURIComponent(district)}`;
+                if (email) url += `&email=${encodeURIComponent(email)}`;
+                if (whatsapp) url += `&whatsapp=${encodeURIComponent(whatsapp)}`;
+
+                const response = await fetch(url);
+                if (response.ok) {
+                    const cacheInfo = await response.json();
+                    isoCached = cacheInfo.discountEligible;  // true = same user, false = different user
+                    
+                    if (cacheInfo.discountEligible) {
+                        // Same user - eligible for discount
+                        document.getElementById('cache-info').innerHTML = `
+                            <div class="cache-info">
+                                ✓ You searched this land before! <strong>80% discount applied!</strong>
+                            </div>
+                        `;
+                    } else {
+                        // Different user - no discount but cached results available
+                        document.getElementById('cache-info').innerHTML = `
+                            <div class="cache-info">
+                                ℹ This land was analyzed before. Results available (full price).
+                            </div>
+                        `;
+                    }
+                    updatePrice(cacheInfo.discountEligible);
+                } else {
+                    isoCached = false;
+                    document.getElementById('cache-info').innerHTML = '';
+                    updatePrice(false);
+                }
+            } catch (error) {
+                console.log('No cache found or error checking cache:', error);
+                isoCached = false;
+                document.getElementById('cache-info').innerHTML = '';
+                updatePrice(false);
+            }
+        }
+
+        function updatePrice(cached) {
+            const priceAmount = cached ? 5 : 25;
+            const pricePaise = cached ? 500 : 2500;
+            
+            document.getElementById('price-display').textContent = `₹${priceAmount}.00`;
+            document.getElementById('total-display').textContent = `₹${priceAmount}.00`;
+
+            if (cached) {
+                document.getElementById('discount-info').innerHTML = `
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin-bottom: 15px; border-radius: 4px;">
+                        <span class="discount-badge">CACHED RESULT - 80% OFF</span>
+                        <p style="margin: 5px 0 0 0; color: #856404; font-size: 13px;">You saved ₹20! Getting cached results...</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('discount-info').innerHTML = '';
+            }
+
+            currentData.amountPaise = pricePaise;
+        }
+
+        function goToStep(step) {
+            if (step === 1) {
+                // Validate land details form
+                const form = document.getElementById('landForm');
+                const formData = new FormData(form);
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                currentData = {
+                    district: document.getElementById('district').value,
+                    circle: document.getElementById('circle').value,
+                    village: document.getElementById('village').value,
+                    khata: document.getElementById('khata').value,
+                    khesra: document.getElementById('khesra').value,
+                    ownerName: document.getElementById('ownerName').value || '',
+                    plotArea: document.getElementById('plotArea').value || '',
+                };
+            } else if (step === 2) {
+                // Validate payment form
+                const whatsapp = document.getElementById('whatsapp').value;
+                const email = document.getElementById('email').value;
+                const agree = document.getElementById('agree').checked;
+
+                if (!/^[0-9]{10,13}$/.test(whatsapp)) {
+                    document.getElementById('error-whatsapp').textContent = 'Valid WhatsApp number required';
+                    return;
+                }
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    document.getElementById('error-email').textContent = 'Valid email required';
+                    return;
+                }
+
+                if (!agree) {
+                    alert('Please agree to the terms');
+                    return;
+                }
+
+                currentData.whatsappNumber = whatsapp;
+                currentData.emailAddress = email;
+                currentData.paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+                // Simulate processing
+                simulateProcessing();
+            }
+
+            updateStepIndicator(step);
+            document.querySelectorAll('.form-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+        }
+
+        function updateStepIndicator(step) {
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index === step) {
+                    dot.classList.add('active');
+                } else if (index < step) {
+                    dot.classList.add('completed');
+                    dot.querySelector('.dot').textContent = '✓';
+                } else {
+                    dot.querySelector('.dot').textContent = index + 1;
+                }
+            });
+        }
+
+        function simulateProcessing() {
+            setTimeout(() => {
+                document.querySelector('.processing').style.display = 'none';
+                document.getElementById('successBox').style.display = 'block';
+
+                document.getElementById('result-location').textContent = 
+                    `${currentData.village}, ${currentData.circle}, ${currentData.district}`;
+                document.getElementById('result-khata').textContent = 
+                    `${currentData.khata} / ${currentData.khesra}`;
+                document.getElementById('result-type').textContent = 
+                    isoCached ? 'Cached Report (Reused)' : 'New Analysis Report';
+            }, 3000);
+        }
+
+        function resetForm() {
+            document.getElementById('landForm').reset();
+            document.getElementById('paymentForm').reset();
+            currentData = {};
+            isoCached = false;
+            document.querySelector('.processing').style.display = 'block';
+            document.getElementById('successBox').style.display = 'none';
+            document.getElementById('cache-info').innerHTML = '';
+            updatePrice(false);
+            goToStep(0);
+        }
+
+        // Initialize
+        updatePrice(false);
+    </script>
+</body>
+</html>
