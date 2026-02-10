@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Create Order - LandRiskAI Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; max-width: 820px; }
+    input { width: 100%; padding: 10px; margin: 6px 0 14px; box-sizing: border-box; }
+    button { padding: 10px 14px; cursor: pointer; }
+    pre { background:#111; color:#0f0; padding:14px; border-radius:8px; overflow:auto; }
+    .row { display:flex; gap:12px; }
+    .row > div { flex:1; }
+    code { background:#f2f2f2; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <h2>Create Order (Local Demo)</h2>
+  <p>Fill details, click <b>Create</b>, then click <b>Mock Pay</b> to generate the PDF.</p>
+
+  <div class="row">
+    <div>
+      <label>District</label>
+      <input id="district" placeholder="e.g., Patna" value="Patna"/>
+    </div>
+    <div>
+      <label>Circle/Block</label>
+      <input id="circle" placeholder="e.g., Danapur" value="Danapur"/>
+    </div>
+  </div>
+
+  <label>Village/Mauza</label>
+  <input id="village" placeholder="e.g., XYZ" value="ExampleVillage"/>
+
+  <div class="row">
+    <div>
+      <label>Khata</label>
+      <input id="khata" placeholder="e.g., 123" value="123"/>
+    </div>
+    <div>
+      <label>Khesra</label>
+      <input id="khesra" placeholder="e.g., 45" value="45"/>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Owner name (optional)</label>
+      <input id="ownerName" placeholder="Optional"/>
+    </div>
+    <div>
+      <label>Plot area (optional)</label>
+      <input id="plotArea" placeholder="Optional"/>
+    </div>
+  </div>
+
+  <label>WhatsApp number (digits only)</label>
+  <input id="whatsappNumber" placeholder="e.g., 91XXXXXXXXXX" value="919999999999"/>
+
+  <button onclick="createOrder()">Create</button>
+  <button onclick="mockPay()">Mock Pay</button>
+
+  <h3>Output</h3>
+  <pre id="out">Waiting…</pre>
+
+<script>
+let currentOrderId = null;
+
+async function createOrder() {
+  const payload = {
+    district: document.getElementById('district').value,
+    circle: document.getElementById('circle').value,
+    village: document.getElementById('village').value,
+    khata: document.getElementById('khata').value,
+    khesra: document.getElementById('khesra').value,
+    ownerName: document.getElementById('ownerName').value || null,
+    plotArea: document.getElementById('plotArea').value || null,
+    whatsappNumber: document.getElementById('whatsappNumber').value
+  };
+
+  const res = await fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  currentOrderId = data.orderId;
+  document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+}
+
+async function mockPay() {
+  if (!currentOrderId) {
+    document.getElementById('out').textContent = 'Create an order first.';
+    return;
+  }
+  const res = await fetch('/api/orders/' + currentOrderId + '/mock-pay?paymentRef=MOCK_UPI_' + Date.now(), {
+    method: 'POST'
+  });
+  const data = await res.json();
+  document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/backend/.gradle
+/backend/build
+/backend/out
+/data
+/.idea
+/.vscode
+*.iml
+.DS_Store

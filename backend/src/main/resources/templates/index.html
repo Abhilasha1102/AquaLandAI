@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>LandRiskAI Bihar - Local Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    code { background:#f2f2f2; padding:2px 6px; border-radius:4px; }
+    a { color: #0b57d0; }
+  </style>
+</head>
+<body>
+  <h2>LandRiskAI (Bihar) - MVP Local Demo</h2>
+  <p>This demo simulates the flow: create order → mock pay → generate PDF → WhatsApp (mock log).</p>
+
+  <h3>Quick links</h3>
+  <ul>
+    <li><a href="/ui/new">Create a new order (simple form)</a></li>
+    <li><a href="/h2-console">H2 Console</a> (JDBC URL: <code>jdbc:h2:mem:landriskai</code>, user <code>sa</code>)</li>
+  </ul>
+
+  <h3>API</h3>
+  <ul>
+    <li><code>POST /api/orders</code></li>
+    <li><code>POST /api/orders/{orderId}/mock-pay</code></li>
+    <li><code>GET /api/reports/{reportId}/download</code></li>
+    <li><code>GET /api/reports/{reportId}/verify?code=...</code></li>
+  </ul>
+</body>
+</html>
