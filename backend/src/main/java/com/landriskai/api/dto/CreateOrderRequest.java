@@ -27,18 +27,17 @@ public class CreateOrderRequest {
     @Size(min = 2, max = 100, message = "Village must be 2-100 characters")
     private String village;
 
-    @NotBlank(message = "Khata number is required")
-    @Size(min = 1, max = 50, message = "Khata must be 1-50 characters")
+    @Size(max = 50, message = "Khata must be max 50 characters")
     private String khata;
 
     @NotBlank(message = "Khesra number is required")
-    @Size(min = 1, max = 50, message = "Khesra must be 1-50 characters")
+    @Size(max = 50, message = "Khesra must be max 50 characters")
     private String khesra;
 
     @Size(max = 255, message = "Owner name must be max 255 characters")
     private String ownerName;
 
-    @Size(max = 50, message = "Plot area must be max 50 characters")
+    @Pattern(regexp = "^(Purchased|Ancestral)?$", message = "Land ownership must be Purchased or Ancestral")
     private String plotArea;
 
     @NotBlank(message = "WhatsApp number is required")
@@ -51,5 +50,10 @@ public class CreateOrderRequest {
 
     @Size(max = 50, message = "Reseller code must be max 50 characters")
     private String resellerCode;
+
+    @AssertTrue(message = "Khesra number is required")
+    public boolean isKhesraProvided() {
+        return khesra != null && !khesra.trim().isEmpty();
+    }
 }
 

@@ -3,6 +3,7 @@ package com.landriskai.api;
 import com.landriskai.api.dto.CreateOrderRequest;
 import com.landriskai.api.dto.CreateOrderResponse;
 import com.landriskai.api.dto.MockPayResponse;
+import com.landriskai.config.LandRiskAiProperties;
 import com.landriskai.domain.OrderStatus;
 import com.landriskai.entity.OrderEntity;
 import com.landriskai.entity.ReportEntity;
@@ -21,11 +22,18 @@ public class OrderController {
     private final OrderService orderService;
     private final ReportService reportService;
     private final SearchCacheRepository searchCacheRepository;
+    private final LandRiskAiProperties props;
 
-    public OrderController(OrderService orderService, ReportService reportService, SearchCacheRepository searchCacheRepository) {
+    public OrderController(
+            OrderService orderService,
+            ReportService reportService,
+            SearchCacheRepository searchCacheRepository,
+            LandRiskAiProperties props
+    ) {
         this.orderService = orderService;
         this.reportService = reportService;
         this.searchCacheRepository = searchCacheRepository;
+        this.props = props;
     }
 
     @PostMapping
@@ -40,15 +48,22 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/mock-pay")
-    public MockPayResponse mockPay(@PathVariable Long orderId, @RequestParam(defaultValue = "MOCK_UPI_TXN") String paymentRef) throws Exception {
-        orderService.markPaid(orderId, paymentRef);
+    public MockPayResponse mockPay(@PathVariable Long orderId, @RequestParam(required = false) String paymentRef) throws Exception {
+        String resolvedPaymentRef = (paymentRef == null || paymentRef.isBlank())
+                ? "MOCK_UPI_TXN_" + orderId + "_" + System.currentTimeMillis()
+                : paymentRef;
+        orderService.markPaid(orderId, resolvedPaymentRef);
         ReportEntity report = reportService.generateAndDeliver(orderId);
+        if (report.getReferenceNo() == null || report.getReferenceNo().isBlank() || "PENDING".equalsIgnoreCase(report.getReferenceNo())) {
+            report = reportService.ensureReferenceAndArtifactsByReportId(report.getId());
+        }
 
-        String base = "http://localhost:8080";
+        String base = props.getLinks().getBaseUrl();
         return MockPayResponse.builder()
                 .orderId(orderId)
                 .status(OrderStatus.DELIVERED)
                 .reportId(report.getId())
+                .referenceNo(report.getReferenceNo())
                 .downloadUrl(base + "/api/reports/" + report.getId() + "/download")
                 .verifyUrl(base + "/api/reports/" + report.getId() + "/verify?code=" + report.getVerificationCode())
                 .build();
@@ -122,4 +137,3 @@ public class OrderController {
         }
     }
 }
-

@@ -47,14 +47,21 @@ public class RiskEngine {
                     .build());
         }
 
-        if (!order.getKhata().matches("^[0-9A-Za-z\\-/]+$") || !order.getKhesra().matches("^[0-9A-Za-z\\-/]+$")) {
+        String khata = order.getKhata();
+        String khesra = order.getKhesra();
+        boolean khataProvided = khata != null && !khata.isBlank();
+        boolean khesraProvided = khesra != null && !khesra.isBlank();
+        boolean khataInvalid = khataProvided && !khata.matches("^[0-9A-Za-z\\-/]+$");
+        boolean khesraInvalid = khesraProvided && !khesra.matches("^[0-9A-Za-z\\-/]+$");
+
+        if (khataInvalid || khesraInvalid) {
             score += 10;
             findings.add(RiskFinding.builder()
                     .code("ID_FORMAT")
                     .title("Khata/Khesra format looks unusual")
                     .message("Khata/Khesra includes uncommon characters. Verify the identifiers are correct.")
                     .severity(FindingSeverity.WARNING)
-                    .evidence("khata=" + order.getKhata() + ", khesra=" + order.getKhesra())
+                .evidence("khata=" + (khataProvided ? khata : "N/A") + ", khesra=" + (khesraProvided ? khesra : "N/A"))
                     .source("Input validation heuristics")
                     .confidence("MEDIUM")
                     .build());

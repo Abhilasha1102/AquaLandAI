@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @Service
@@ -25,7 +24,8 @@ public class PdfReportService {
         this.props = props;
     }
 
-    public String generatePdf(OrderEntity order, RiskResult result, Long reportId, String verificationCode) throws Exception {
+    public String generatePdf(OrderEntity order, RiskResult result, Long reportId, String verificationCode, String referenceNo) throws Exception {
+        String resolvedReferenceNo = resolveReferenceNo(referenceNo, reportId);
         File dir = new File(props.getStorage().getReportDir());
         if (!dir.exists()) Files.createDirectories(dir.toPath());
 
@@ -42,6 +42,7 @@ public class PdfReportService {
             Font body = new Font(Font.HELVETICA, 10, Font.NORMAL);
 
             doc.add(new Paragraph("LandRiskAI - Bihar Land Risk Report (MVP Demo)", h1));
+            doc.add(new Paragraph("Reference No: " + resolvedReferenceNo, body));
             doc.add(new Paragraph("Report ID: " + reportId + " | Verification Code: " + verificationCode, body));
             doc.add(new Paragraph("Generated: " + DateTimeFormatter.ISO_INSTANT.format(Instant.now()), body));
             doc.add(Chunk.NEWLINE);
@@ -57,9 +58,16 @@ public class PdfReportService {
             doc.add(new Paragraph("District: " + order.getDistrict(), body));
             doc.add(new Paragraph("Circle/Block: " + order.getCircle(), body));
             doc.add(new Paragraph("Village/Mauza: " + order.getVillage(), body));
-            doc.add(new Paragraph("Khata: " + order.getKhata() + " | Khesra: " + order.getKhesra(), body));
+            doc.add(new Paragraph("Khata: " + displayIdentifier(order.getKhata()) + " | Khesra: " + displayIdentifier(order.getKhesra()), body));
             if (order.getOwnerName() != null) doc.add(new Paragraph("Owner (input): " + order.getOwnerName(), body));
-            if (order.getPlotArea() != null) doc.add(new Paragraph("Area (input): " + order.getPlotArea(), body));
+            if (order.getPlotArea() != null) doc.add(new Paragraph("Plot Area: " + order.getPlotArea(), body));
+            doc.add(Chunk.NEWLINE);
+
+            // Owner & contact
+            doc.add(new Paragraph("Owner & Contact", h2));
+            doc.add(new Paragraph("Owner Name: " + safe(order.getOwnerName()), body));
+            doc.add(new Paragraph("WhatsApp: " + safe(order.getWhatsappNumber()), body));
+            doc.add(new Paragraph("Email: " + safe(order.getEmailAddress()), body));
             doc.add(Chunk.NEWLINE);
 
             // Findings
@@ -99,7 +107,8 @@ public class PdfReportService {
 
             // Disclaimer
             doc.add(new Paragraph("Disclaimer", h2));
-            doc.add(new Paragraph(
+                doc.add(new Paragraph(
+                    "Reference No: " + resolvedReferenceNo + "\n" +
                     "This report is for informational purposes only and is NOT a legal title certificate or legal advice. " +
                     "It is generated based on the inputs provided and data availability at the time of generation. " +
                     "Users must independently verify all details with relevant authorities and documents.",
@@ -112,6 +121,18 @@ public class PdfReportService {
     }
 
     private String safe(String s) { return s == null ? "" : s; }
+
+    private String resolveReferenceNo(String referenceNo, Long reportId) {
+        if (referenceNo != null && !referenceNo.isBlank() && !"PENDING".equalsIgnoreCase(referenceNo)) {
+            return referenceNo;
+        }
+        String date = DateTimeFormatter.BASIC_ISO_DATE.format(Instant.now().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        return "LR-BR-" + date + "-" + reportId;
+    }
+
+    private String displayIdentifier(String value) {
+        return value == null || value.isBlank() ? "Not provided" : value;
+    }
 
     private com.lowagie.text.pdf.PdfPCell headerCell(String t) {
         Font f = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -127,3 +148,4 @@ public class PdfReportService {
         return c;
     }
 }
+

@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
     Optional<ReportEntity> findByIdAndVerificationCode(Long id, String verificationCode);
     Optional<ReportEntity> findByOrder_Id(Long orderId);
+    Optional<ReportEntity> findByReferenceNo(String referenceNo);
+    boolean existsByReferenceNo(String referenceNo);
 }

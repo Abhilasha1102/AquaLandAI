@@ -7,7 +7,14 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "lr_report")
+@Table(name = "lr_report",
+    indexes = {
+        @Index(name = "idx_report_verification_code", columnList = "verification_code"),
+        @Index(name = "idx_report_reference_no", columnList = "reference_no"),
+        @Index(name = "idx_report_order", columnList = "order_id"),
+        @Index(name = "idx_report_pdf_expires", columnList = "pdf_expires_at")
+    }
+)
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class ReportEntity {
@@ -31,12 +38,16 @@ public class ReportEntity {
     @Column(nullable = false)
     private String verificationCode; // for verify endpoint
 
+    @Column(name = "reference_no", nullable = false, unique = true, length = 32)
+    private String referenceNo; // customer-facing reference number
+
     @Column(nullable = false)
     private String pdfPath; // local file path
 
     /**
      * Report delivery status
      */
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReportDeliveryStatus deliveryStatus = ReportDeliveryStatus.PENDING;
@@ -66,6 +77,7 @@ public class ReportEntity {
     /**
      * Whether report was regenerated
      */
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isRegenerated = false;
 
@@ -77,14 +89,27 @@ public class ReportEntity {
     @Column(nullable = false, updatable = false)
     private Instant generatedAt;
 
+    @Column(nullable = false, updatable = false)
+    private Instant createTime;
+
     @Column(nullable = false)
+    private Instant updateTime;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String summaryJson; // compact, for verify page
 
     @PrePersist
     protected void onCreate() {
         this.generatedAt = Instant.now();
+        this.createTime = Instant.now();
+        this.updateTime = Instant.now();
         // PDF links expire in 7 days
         this.pdfExpiresAt = Instant.now().plusSeconds(7 * 24 * 3600L);
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateTime = Instant.now();
     }
 
     public enum ReportDeliveryStatus {

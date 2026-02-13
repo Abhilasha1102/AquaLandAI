@@ -14,6 +14,7 @@ public class MockPayResponse {
     private Long orderId;
     private OrderStatus status;
     private Long reportId;
+    private String referenceNo;
     private String downloadUrl;
     private String verifyUrl;
 }

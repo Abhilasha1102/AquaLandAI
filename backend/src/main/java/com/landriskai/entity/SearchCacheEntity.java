@@ -71,8 +71,10 @@ public class SearchCacheEntity {
     private Instant expiresAt; // 7 days from now
 
     // Usage tracking
+    @Builder.Default
     private Integer reusageCount = 0;
     private Instant lastReuseAt;
+    @Builder.Default
     private Long totalRevenueFromReusagePaise = 0L; // Revenue generated from reuses
 
     // User identification for discount eligibility

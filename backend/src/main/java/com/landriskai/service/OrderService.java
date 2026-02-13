@@ -1,8 +1,6 @@
 package com.landriskai.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.landriskai.api.dto.CreateOrderRequest;
-import com.landriskai.config.LandRiskAiProperties;
 import com.landriskai.domain.OrderStatus;
 import com.landriskai.entity.OrderEntity;
 import com.landriskai.repo.OrderRepository;
@@ -22,12 +20,15 @@ public class OrderService {
 
     @Transactional
     public OrderEntity createOrder(CreateOrderRequest req) {
+        String khata = normalizeIdentifier(req.getKhata());
+        String khesra = normalizeIdentifier(req.getKhesra());
+
         OrderEntity order = OrderEntity.builder()
                 .district(req.getDistrict().trim())
                 .circle(req.getCircle().trim())
                 .village(req.getVillage().trim())
-                .khata(req.getKhata().trim())
-                .khesra(req.getKhesra().trim())
+            .khata(khata)
+            .khesra(khesra)
                 .ownerName(req.getOwnerName() == null ? null : req.getOwnerName().trim())
                 .plotArea(req.getPlotArea() == null ? null : req.getPlotArea().trim())
                 .whatsappNumber(req.getWhatsappNumber().trim())
@@ -38,6 +39,10 @@ public class OrderService {
                 .build();
 
         return orderRepo.save(order);
+    }
+
+    private String normalizeIdentifier(String value) {
+        return value == null ? "" : value.trim();
     }
 
     @Transactional

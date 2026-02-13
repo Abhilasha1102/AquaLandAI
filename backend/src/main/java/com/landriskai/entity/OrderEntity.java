@@ -7,7 +7,15 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "lr_order")
+@Table(name = "lr_order",
+    indexes = {
+        @Index(name = "idx_order_whatsapp", columnList = "whatsapp_number"),
+        @Index(name = "idx_order_payment_ref", columnList = "payment_ref")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_order_payment_ref", columnNames = "payment_ref")
+    }
+)
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class OrderEntity {
@@ -43,6 +51,7 @@ public class OrderEntity {
     // Payment
     @Column(nullable = false)
     private Integer amountPaise; // 2500 for Rs 25
+    @Column(length = 100, unique = true)
     private String paymentRef;
 
     @Enumerated(EnumType.STRING)
@@ -63,12 +72,14 @@ public class OrderEntity {
     /**
      * Delivery attempt count
      */
+    @Builder.Default
     @Column(nullable = false)
     private Integer deliveryAttempts = 0;
 
     /**
      * Whether delivery was successful
      */
+    @Builder.Default
     @Column(nullable = false)
     private Boolean deliverySuccessful = false;
 

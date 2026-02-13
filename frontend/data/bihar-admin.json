@@ -1,0 +1,195 @@
+{
+  "state": "Bihar",
+  "stateCode": 10,
+  "districts": [
+    {
+      "districtName": "Patna",
+      "districtCode": 123,
+      "blocks": [
+        {
+          "blockName": "Danapur",
+          "blockCode": 456,
+          "villages": [
+            { "villageName": "Kothwan", "villageCode": 456001, "pinCode": "801503" },
+            { "villageName": "Saguna", "villageCode": 456002, "pinCode": "801503" }
+          ]
+        },
+        {
+          "blockName": "Phulwari",
+          "blockCode": 457,
+          "villages": [
+            { "villageName": "Anisabad", "villageCode": 457001, "pinCode": "800002" },
+            { "villageName": "Beur", "villageCode": 457002, "pinCode": "800002" }
+          ]
+        }
+      ],
+      "revenue": {
+        "circles": [
+          {
+            "circleName": "Danapur Anchal",
+            "circleId": "BIH_CIR_001",
+            "mauzas": [
+              { "mauzaName": "Digha", "mauzaId": "BIH_MAUZA_001" },
+              { "mauzaName": "Khagaul", "mauzaId": "BIH_MAUZA_002" }
+            ]
+          },
+          {
+            "circleName": "Phulwari Anchal",
+            "circleId": "BIH_CIR_002",
+            "mauzas": [
+              { "mauzaName": "Anisabad", "mauzaId": "BIH_MAUZA_003" },
+              { "mauzaName": "Beur", "mauzaId": "BIH_MAUZA_004" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "districtName": "Muzaffarpur",
+      "districtCode": 124,
+      "blocks": [
+        {
+          "blockName": "Musahari",
+          "blockCode": 510,
+          "villages": [
+            { "villageName": "Ramna", "villageCode": 510001, "pinCode": "842001" },
+            { "villageName": "Juran Chapra", "villageCode": 510002, "pinCode": "842001" }
+          ]
+        },
+        {
+          "blockName": "Kanti",
+          "blockCode": 511,
+          "villages": [
+            { "villageName": "Kharauna", "villageCode": 511001, "pinCode": "843109" },
+            { "villageName": "Dhanaur", "villageCode": 511002, "pinCode": "843109" }
+          ]
+        }
+      ],
+      "revenue": {
+        "circles": [
+          {
+            "circleName": "Musahari Anchal",
+            "circleId": "BIH_CIR_101",
+            "mauzas": [
+              { "mauzaName": "Ramna", "mauzaId": "BIH_MAUZA_101" },
+              { "mauzaName": "Juran Chapra", "mauzaId": "BIH_MAUZA_102" }
+            ]
+          },
+          {
+            "circleName": "Kanti Anchal",
+            "circleId": "BIH_CIR_102",
+            "mauzas": [
+              { "mauzaName": "Kharauna", "mauzaId": "BIH_MAUZA_103" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "districtName": "Darbhanga",
+      "districtCode": 125,
+      "blocks": [
+        {
+          "blockName": "Bahadurpur",
+          "blockCode": 520,
+          "villages": [
+            { "villageName": "Bhadaul", "villageCode": 520001, "pinCode": "846005" },
+            { "villageName": "Laheriasarai", "villageCode": 520002, "pinCode": "846001" }
+          ]
+        },
+        {
+          "blockName": "Alinagar",
+          "blockCode": 521,
+          "villages": [
+            { "villageName": "Nawtoli", "villageCode": 521001, "pinCode": "847405" },
+            { "villageName": "Bela", "villageCode": 521002, "pinCode": "847405" }
+          ]
+        }
+      ],
+      "revenue": {
+        "circles": [
+          {
+            "circleName": "Darbhanga Sadar",
+            "circleId": "BIH_CIR_201",
+            "mauzas": [
+              { "mauzaName": "Laheriasarai", "mauzaId": "BIH_MAUZA_201" },
+              { "mauzaName": "Bhadaul", "mauzaId": "BIH_MAUZA_202" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "districtName": "Samastipur",
+      "districtCode": 126,
+      "blocks": [
+        {
+          "blockName": "Pusa",
+          "blockCode": 530,
+          "villages": [
+            { "villageName": "Pusa" , "villageCode": 530001, "pinCode": "848125" },
+            { "villageName": "Morsand", "villageCode": 530002, "pinCode": "848125" }
+          ]
+        },
+        {
+          "blockName": "Ujiarpur",
+          "blockCode": 531,
+          "villages": [
+            { "villageName": "Ujiarpur", "villageCode": 531001, "pinCode": "848132" },
+            { "villageName": "Mohiuddin Nagar", "villageCode": 531002, "pinCode": "848130" }
+          ]
+        }
+      ],
+      "revenue": {
+        "circles": [
+          {
+            "circleName": "Pusa Anchal",
+            "circleId": "BIH_CIR_301",
+            "mauzas": [
+              { "mauzaName": "Pusa", "mauzaId": "BIH_MAUZA_301" },
+              { "mauzaName": "Morsand", "mauzaId": "BIH_MAUZA_302" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "districtName": "Madhubani",
+      "districtCode": 127,
+      "blocks": [
+        {
+          "blockName": "Rajnagar",
+          "blockCode": 540,
+          "villages": [
+            { "villageName": "Rajnagar", "villageCode": 540001, "pinCode": "847236" },
+            { "villageName": "Bela", "villageCode": 540002, "pinCode": "847236" }
+          ]
+        },
+        {
+          "blockName": "Jhanjharpur",
+          "blockCode": 541,
+          "villages": [
+            { "villageName": "Jhanjharpur", "villageCode": 541001, "pinCode": "847403" },
+            { "villageName": "Simri", "villageCode": 541002, "pinCode": "847403" }
+          ]
+        }
+      ],
+      "revenue": {
+        "circles": [
+          {
+            "circleName": "Madhubani Sadar",
+            "circleId": "BIH_CIR_401",
+            "mauzas": [
+              { "mauzaName": "Rajnagar", "mauzaId": "BIH_MAUZA_401" },
+              { "mauzaName": "Jhanjharpur", "mauzaId": "BIH_MAUZA_402" }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "source": {
+    "admin": "LGD (Ministry of Panchayati Raj)",
+    "revenue": "Bihar land systems dropdown extraction"
+  }
+}
